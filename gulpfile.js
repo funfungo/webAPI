@@ -10,9 +10,8 @@ var browserSync = require('browser-sync');
 var babel = require('gulp-babel');
 var uglify = require('gulp-uglify');
 var tab = require('gulp-tap');
+var yargs = require('yargs').argv;
 var pkg = require('./package.json');
-
-console.log(uglify);
 
 var dist = __dirname + '/dist';
 
@@ -69,7 +68,6 @@ gulp.task('build:index',function(){
     if(fileList.length) {
         fileList.forEach(function (e,i) {
             str += '<li><a href="./' + e + '">' + e + '</a></li>';
-            console.log('<li><a href="./' + e + '">' + e + '</a></li>');
         });
         str += "</ul></body></html>";
         fs.open('./dist/tmpl/index.html', 'w+', function (err,fd) {
@@ -104,8 +102,12 @@ gulp.task('watch', function () {
 });
 
 gulp.task('default', function () {
-    gulp.start('watch');
-    gulp.start('serve');
+    if(yargs.w) {
+        gulp.start('watch');
+        gulp.start('serve');
+    }else{
+        gulp.start('build:all');
+    }
 });
 
 
