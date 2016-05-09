@@ -20,7 +20,7 @@ gulp.task('build:style', function () {
         "/*  wrynn's webAPI test V${pkg.version}  */",
         ''
     ].join('\n');
-    gulp.src('src/style/*.less', {base: 'src'})
+    gulp.src('src/**/*.less', {base: 'src'})
         .pipe(sourceMap.init())
         .pipe(less().on('error', function (e) {
             console.log(e.message);
@@ -41,7 +41,7 @@ gulp.task("build:assets", function () {
 });
 
 gulp.task("build:js", function () {
-    gulp.src('src/js/*.js', {base: 'src'})
+    gulp.src('src/**/*.js', {base: 'src'})
         .pipe(sourceMap.init())
         .pipe(babel())
         .pipe(sourceMap.write())
@@ -51,7 +51,7 @@ gulp.task("build:js", function () {
 });
 
 gulp.task('build:html', function () {
-    gulp.src('src/tmpl/*.html',{base:'src'})
+    gulp.src('src/**/*.html',{base:'src'})
         .pipe(tab(function(file){
             var content = file.contents.toString();
             content = content.replace(/<link.+less/ig, function (match) {
@@ -59,6 +59,7 @@ gulp.task('build:html', function () {
             });
             file.contents = new Buffer(content);
         }))
+        .pipe(browserSync.reload({stream: true}))
         .pipe(gulp.dest(dist));
 });
 
@@ -86,19 +87,22 @@ gulp.task('build:index',function(){
 gulp.task('build:all', ['build:style','build:js','build:assets','build:html','build:index']);
 
 gulp.task('serve', ['build:index'],function () {
+    yargs.p = yargs.p || 8087;
     browserSync.init({
         server:{
             baseDir:'./dist'
         },
-        startPath: '/tmpl'
+        startPath: '/tmpl',
+        port:yargs.p
     });
 });
 
 gulp.task('watch', function () {
-    gulp.watch('src/style/*.less',['build:style']);
-    gulp.watch('src/images/*.?(jpg|png|gif)', ['build:assets']);
-    gulp.watch('src/js/*.js', ['build:js']);
-    gulp.watch('src/tmpl/*.html', ['build:html']);
+    console.log(1);
+    gulp.watch('src/**/*.less',['build:style']);
+    gulp.watch('src/**/*.?(jpg|png|gif)', ['build:assets']);
+    gulp.watch('src/**/*.js', ['build:js']);
+    gulp.watch('src/**/*.html', ['build:html']);
 });
 
 gulp.task('default', function () {
@@ -115,3 +119,4 @@ gulp.task('default', function () {
 // 1.监控删除
 // 2.文件夹改名
 // 3.创建文件夹
+// 4.监控新建文件

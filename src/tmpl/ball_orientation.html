@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0">
+    <meta charset="UTF-8">
+    <title>陀螺仪测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body,html {
+            height: 100%;
+        }
+        .wrap{
+            position: relative;
+            width:100%;
+            height:100%;
+            background: #ccc;
+        }
+        .ball {
+            position: absolute;
+            left:50%;
+            top:50%;
+            margin-left: -15px;
+            margin-top: -15px;
+            height: 30px;
+            width: 30px;
+            background: #f00;
+            -webkit-border-radius: 50%;
+            border-radius: 50%;
+            /*transition: all 1ms;
+            -webkit-transition: all 1ms;*/
+        }
+        .log{
+            position: absolute;
+            left:0;
+            top:0;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="ball"></div>
+    <pre class="log"></pre>
+</div>
+
+<pre class="output"></pre>
+<script src="../js/lib/zeoto.js"></script>
+<script src="../js/ball_orientation.js"></script>
+</body>
+</html>
