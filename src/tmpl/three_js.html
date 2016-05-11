@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>three.js canvas - lines - sphere</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background-color: #000000;
+            margin: 0px;
+            overflow: hidden;
+        }
+        a {
+            color:#0078ff;
+        }
+        canvas { width: 100%; height: 100% }
+        .world{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: -webkit-linear-gradient(#e4e0ba, #f7d9aa);
+            background: linear-gradient(#e4e0ba, #f7d9aa);
+        }
+    </style>
+</head>
+<body>
+<div class="world" id="world"></div>
+<script src="../js/lib/three.min.js"></script>
+<script src="../js/lib/tween.js"></script>
+
+
+<!--test-->
+<script>
+    var dpr = (window.devicePixelRatio) ? window.devicePixelRatio : 1;
+    var scene,camera,renderer;
+    var aspectRatio,fieldOfView, nearPlane, farPlane;
+    var Height, Width;
+    var ball, dot;
+    var control = {};
+    function createScene() {
+        Height = window.innerHeight;
+        Width = window.innerWidth;
+        scene = new THREE.Scene();
+        aspectRatio = Width / Height;
+        fieldOfView = 45;
+        nearPlane = 1;
+        farPlane = 500;
+        camera = new THREE.PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane);
+        camera.position.x = 0;
+        camera.position.z = 0;
+        camera.position.y = 0;
+        camera.tween = new TWEEN.Tween(camera.position)
+                .to({x: 0, y: 0, z: 200}, 1200)
+                .delay(1000)
+                .start();
+        renderer = new THREE.WebGLRenderer({antialias: true });
+        renderer.setPixelRatio(dpr);
+        renderer.setSize(Width,Height);
+        renderer.shadowMap.enabled = true;
+        container = document.getElementById('world');
+        container.appendChild(renderer.domElement);
+    }
+    // LIGHTS
+    var ambientLight, hemisphereLight, shadowLight;
+    function createLights() {
+        //环境光
+        ambientLight = new THREE.AmbientLight(0xffffff);
+        scene.add(ambientLight);
+    }
+    var dotArr = [];
+    var vertices = [];
+    var Earth = function () {
+        this.mesh = new THREE.Object3D();
+        var b = new Ball(30);
+        //this.mesh.add(b.mesh);
+        vertices = b.mesh.geometry.vertices;
+        for(var i = 0;i<vertices.length;i++) {
+            var x = Math.random() *300 -150;
+            var y = Math.random() *200 -100;
+            var z = Math.random() *500 -250;
+            var dots = new Dot(0, 0, 0);
+            dots.disX = (vertices[i].x - x)/60;
+            dots.disY = (vertices[i].y - y)/60;
+            dots.disZ = (vertices[i].z - z)/60;
+            this.mesh.add(dots.mesh);
+            dotArr.push(dots);
+            dots.tweenA = new TWEEN.Tween(dots.mesh.position)
+                    .to({x: x, y: y, z: z},1000)
+                    .easing(TWEEN.Easing.Back.Out)
+                    .delay(1000)
+                    .start();
+            dots.tweenB = new TWEEN.Tween(dots.mesh.position)
+                    .to({x: vertices[i].x, y: vertices[i].y, z: vertices[i].z}, 2000)
+                    .delay(2000)
+                    .stop();
+            dots.tweenA.chain(dots.tweenB);
+        }
+    };
+    var Ball = function (radius) {
+        var geom = new THREE.SphereGeometry(radius, 30, 10);
+        var mat = new THREE.MeshPhongMaterial({
+            wireframe: true,
+            color: 0x666666
+        });
+        this.mesh = new THREE.Mesh(geom,mat);
+    };
+    var Dot = function (posX, posY, posZ) {
+        var geom = new THREE.SphereGeometry(0.2, 0, 0);
+        var mat = new THREE.MeshPhongMaterial({
+            //color: 0x1dbc19,
+            color:0x888888,
+            //shading: THREE.SmoothShading
+        });
+        this.mesh = new THREE.Mesh(geom,mat);
+        this.mesh.position.x = posX || 0;
+        this.mesh.position.y = posY || 0;
+        this.mesh.position.z = posZ || 0;
+    };
+    function createEarth() {
+        earth = new Earth();
+        scene.add(earth.mesh);
+    }
+    var lineArr = [];
+    function loop(){
+        earth.mesh.rotation.y += 0.2 * Math.PI / 180;
+        earth.mesh.rotation.z += 0.2 * Math.PI / 180;
+        earth.mesh.rotation.x += 0.2 * Math.PI / 180;
+        for(var i=0,length=lineArr.length;i<length;i++) {
+            earth.mesh.remove(lineArr[i]);
+        }
+        console.log(lineArr.length);
+        lineArr.length = 0;
+        var circleGeometry = new THREE.CircleGeometry(30, 64, 0, control.pi);
+        circleGeometry.vertices.shift();
+        var circleMaterial = new THREE.LineBasicMaterial({color:0xcccccc,linewidth:0.2});
+        var circleLine = new THREE.Line(circleGeometry, circleMaterial);
+        earth.mesh.add(circleLine);
+        lineArr.push(circleLine);
+        TWEEN.update();
+        for(var i=1;i<30;i++){
+            var rotate = ((Math.PI*2)/30)*i;
+            var circle = circleLine.clone();
+            circle.rotateY(rotate);
+            //circle.rotateZ(i*0.5);
+            circle.rotateX(0.3);
+            earth.mesh.add(circle);
+            lineArr.push(circle);
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(loop);
+    }
+
+    function init() {
+        createScene();
+        createLights();
+        createEarth();
+        control.pi = 0;
+        var increasePi = new TWEEN.Tween(control)
+                .to({pi: Math.PI * 2}, 5000)
+                .delay(1000);
+        dotArr[0].tweenB.chain(increasePi);
+        loop();
+        /*for(var i =30;i<60;i++){
+            dotArr[i].mesh.material = new THREE.MeshPhongMaterial({color: 0xff0000});
+        }
+        console.log(dotArr[1].mesh.material);*/
+    }
+    init();
+</script>
+
+
+</body>
+</html>

@@ -43,15 +43,15 @@ $(document).ready(function(){
         elem.style['-weblit-transfrom'] = tranformText;
     }
 
-    function setRequestAnimationFrame(){
+    /*function setRequestAnimationFrame(){
         return requestAnimationFrame ||
             webkitRequestAnimationFrame ||
             mozRequestAnimationFrame ||
             oRequestAnimationFrame ||
             msRequestAnimationFrame ||
-            setTimeout(callback,)
+            setTimeout(callback)
 
-    }
+    }*/
 
     window.addEventListener('deviceorientation', handleOrientation, false);
 });
